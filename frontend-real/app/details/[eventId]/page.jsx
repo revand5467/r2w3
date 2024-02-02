@@ -7,7 +7,10 @@ import img from '../../../public/event1.jpg';
 import { useStateContext } from '@/context/eventContext';
 import QRCode from 'react-qr-code';
 import WalletConnect  from '@/components/WalletConnect';
-
+import { Contract, BrowserProvider } from "ethers";
+import NFT from '../../../abi/nft.json';
+import Web3 from 'web3';
+import {ethers} from 'ethers';
 const EventDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [qrCodeDataURL, setQRCodeDataURL] = useState('');
@@ -21,6 +24,10 @@ const EventDetails = () => {
   const { name1, imageUrl, imageUrl2, id, description, location, organizer } = exampleProps;
   const [jsonUrl, setJsonUrl] = useState('');
   const { address , status} = useStateContext();
+  const NFT_CONTRACT_ADDRESS = "0x0df9139fdd2ef39d923878b2342fd52eeecc92d2";
+    const [isWalletInstalled, setIsWalletInstalled] = useState(false);
+    const [NFTContract, setNFTContract] = useState(null);
+   
   const state = {
     name1: name1,
     description: description,
@@ -97,6 +104,13 @@ const EventDetails = () => {
         console.log(data.metadataIpfsUrl);
         setGeneratedUrl(data.qrCodeIpfsUrl2);
         setJsonUrl(data.metadataIpfsUrl2); // Set the JSON URL here
+        //const BigNumber = require('ethers').BigNumber;
+        // Assuming 0.0001 represented as 10000
+        // Assuming 0.0001 represented as 10000
+        //const amountInWei = Web3.utils.toWei('0.00001', 'ether');
+const ticketId = await NFTContract.mintNFT(2, address, data.metadataIpfsUrl2);
+        await ticketId.wait();
+        console.log(`Event created with ID: ${eventIdForCreateEvent}`);
       } else {
         console.error('Failed to generate QR code:', response.statusText);
       }
@@ -106,6 +120,21 @@ const EventDetails = () => {
    // setIsFormVisible(false);
    // setUserName('');
   };
+  useEffect(() => {
+    function initNFTContract () {
+      const provider = new BrowserProvider(window.ethereum);
+      provider.getSigner().then((signer) => {
+        const currentAddress = signer.getAddress();
+
+    console.log("Current Address:", currentAddress);
+        setNFTContract(new Contract(NFT_CONTRACT_ADDRESS, NFT.abi, signer));
+        console.log("NFT contract successfully initialized");
+      }).catch((error) => {
+        console.error("Error initializing contract:", error);
+      });
+    }
+    initNFTContract();
+  }, []);
   const downloadQRCodeImage = async (url) => {
     try {
       const response = await fetch(url);
