@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { withRouter } from 'next/router';
 import {  useStateContext } from "../context/eventContext.js";
 import { useContext } from "react";
-const Example = ({name2 , imageUrl1 , imageUrl2 ,id , description , location , organizer}) => {
+const Example = ({name2 , imageUrl1 , imageUrl2 , id , description , location , organizer}) => {
   const { setProps } = useStateContext();
   useEffect(() => {
     // Store the props in the context when the component mounts

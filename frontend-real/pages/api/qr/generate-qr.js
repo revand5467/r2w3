@@ -7,10 +7,11 @@ const pinata = new Pinata(process.env.KEY, process.env.SECRET);
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
-      const { userName, email, eventName } = req.body;
+      const { userName, email, eventName ,id, address } = req.body;
       
       // Generate QR code with user's name
-      const qrCodeData = `User: ${userName}`;
+      const qrCodeData = `User: ${address} , id:${id}`;
+      console.log(qrCodeData);
       const qrCodeBuffer = qrImage.imageSync(qrCodeData, { type: 'png' });
 
       // Convert the buffer to a readable stream
@@ -25,7 +26,7 @@ export default async function handler(req, res) {
 
       const pinFile = await pinata.pinFileToIPFS(qrCodeStream, pinFileOptions);
       const qrCodeIpfsUrl = pinFile.IpfsHash;
-
+      const qrCodeIpfsUrl2 = `https://gateway.pinata.cloud/ipfs/${qrCodeIpfsUrl}`;
       // Generate metadata JSON
       const metadata = {
         name: userName,
@@ -52,11 +53,11 @@ export default async function handler(req, res) {
       // Pin the metadata JSON to Pinata
       const pinMetadataFile = await pinata.pinFileToIPFS(metadataStream, { pinataMetadata: { name: 'metadata.json' } });
       const metadataIpfsUrl = pinMetadataFile.IpfsHash;
-
+      const metadataIpfsUrl2 = `https://gateway.pinata.cloud/ipfs/${metadataIpfsUrl}`;
       // Return the IPFS URL of the stored QR code and metadata JSON
-      console.log("QR Code IPFS URL:", qrCodeIpfsUrl);
+      console.log("QR Code IPFS URL:", qrCodeIpfsUrl2);
       console.log("Metadata IPFS URL:", metadataIpfsUrl);
-      res.status(200).json({ qrCodeIpfsUrl, metadataIpfsUrl });
+      res.status(200).json({ qrCodeIpfsUrl2, metadataIpfsUrl2 });
     } catch (error) {
       console.error('Error generating QR code:', error);
       res.status(500).json({ error: 'Failed to generate QR code' });

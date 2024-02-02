@@ -4,11 +4,14 @@ import { IoLocationSharp } from 'react-icons/io5';
 import { BiUpvote } from 'react-icons/bi';
 import Image from 'next/image';
 import img from '../../../public/event1.jpg';
-import { useStateContext } from '../../../context/eventContext.js';
+import { useStateContext } from '@/context/eventContext';
 import QRCode from 'react-qr-code';
+import WalletConnect  from '@/components/WalletConnect';
 
 const EventDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [qrCodeDataURL, setQRCodeDataURL] = useState('');
+
   const [amount, setAmount] = useState('');
   const [donators, setDonators] = useState([]);
   const [isFormVisible, setIsFormVisible] = useState(false);
@@ -17,17 +20,19 @@ const EventDetails = () => {
   const { exampleProps } = useStateContext();
   const { name1, imageUrl, imageUrl2, id, description, location, organizer } = exampleProps;
   const [jsonUrl, setJsonUrl] = useState('');
-
+  const { address , status} = useStateContext();
   const state = {
-    title: name1,
+    name1: name1,
     description: description,
     location: location,
-    owner: organizer,
-    image1: imageUrl,
-    image2: imageUrl2,
-    pId: id,
+    organizer: organizer,
+    imageUrl: imageUrl,
+    imageUrl: imageUrl2,
+    id: id,
   };
-
+  console.log(state);
+  console.log(state.pId);
+  console.log(address);
   const date = new Date();
   const formattedDate = `${date.getDate()} ${date.toLocaleString('default', {
     month: 'short',
@@ -80,7 +85,9 @@ const EventDetails = () => {
         body: JSON.stringify({
           userName,
           email: document.getElementById('email').value,
-          eventName: state.title,
+          eventName: state?.title,
+          address:address, 
+          id:state?.id
         }),
       });
   
@@ -88,8 +95,8 @@ const EventDetails = () => {
         const data = await response.json();
         console.log(data.qrCodeIpfsUrl);
         console.log(data.metadataIpfsUrl);
-        setGeneratedUrl(data.qrCodeIpfsUrl);
-        setJsonUrl(data.metadataIpfsUrl); // Set the JSON URL here
+        setGeneratedUrl(data.qrCodeIpfsUrl2);
+        setJsonUrl(data.metadataIpfsUrl2); // Set the JSON URL here
       } else {
         console.error('Failed to generate QR code:', response.statusText);
       }
@@ -99,13 +106,36 @@ const EventDetails = () => {
    // setIsFormVisible(false);
    // setUserName('');
   };
+  const downloadQRCodeImage = async (url) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
   
+      // Create a link element
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+  
+      // Set the filename
+      link.download = 'qr-code-image.png'; // You can set the desired file name and format
+  
+      // Append the link to the document
+      document.body.appendChild(link);
+  
+      // Trigger a click on the link to start the download
+      link.click();
+  
+      // Remove the link from the document
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading QR code image:', error);
+    }
+  };
   
   const handleGenerateQRCode = () => {
     // Generate QR code based on the user's name
     // You can use any QR code generation logic or library here
     // For this example, I'll use a simple string concatenation
-    const qrCodeData = `User: ${userName}`;
+    const qrCodeData = `User: ${address} , id:${state?.id}`;
     return <QRCode value={qrCodeData} />;
    
   };
@@ -135,27 +165,36 @@ const EventDetails = () => {
         {isLoading && <p>Loading...</p>}
         <div className="overflow-x-hidden" style={{ marginTop: -100, zIndex: -1 }}>
           <div className="bg-white mt-16">
+        
             <div className="mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
               <div className="lg:grid lg:grid-rows-1 lg:grid-cols-7 lg:gap-x-8 lg:gap-y-10 xl:gap-x-16">
+                
                 <div className="lg:row-end-1 lg:col-span-4">
-                  <div className="aspect-w-4 aspect-h-3 rounded-lg bg-gray-100 overflow-hidden">
+                  <div className="aspect-w-4 aspect-h-3 rounded-lg bg-gray-100 overflow-hidden ">
+                  <div className="bg-black align-middle flex items-center justify-center">
+    <WalletConnect />
+</div>
+
+                 
                     <Image
                       src={img}
-                      alt={state?.title}
+                      alt={state?.name}
                       className="object-center object-cover w-full"
                     />
                   </div>
                 </div>
                 <div className="max-w-2xl mx-auto mt-14 sm: lg:max-w-none lg:mt-0 lg:row-end-2 lg:row-span-2 lg:col-span-3">
                   <div className="flex flex-col-reverse">
-                    <div className="">
-                      <h1 className="text-2xl font-extrabold tracking-tight mb-2 text-gray-900 sm:text-3xl">
-                        {/* {state?.title ? state?.title : ''} */}
-                      </h1>
+                    {/* <h2>{state?.pId}</h2> */}
+                    <div className="flex ">
+                      
                     </div>
                   </div>
                   <div className="my-2 flex-col sm:flex-row flex sm:flex-none  items-start font-bold text-gray-900 text-xl  sm:items-center ">
                     <div className="sm:mb-0 mx-1 mb-2">Event time </div>
+                    <h1 className="text-2xl font-extrabold tracking-tight mb-2 text-gray-900 sm:text-3xl">
+                        {`${state?.id}`}
+                      </h1>
                     <div className="">{formattedDate}</div>
                   </div>
                   <div className="my-2 flex-col sm:flex-row flex sm:flex-none  items-start font-bold text-gray-900 text-xl  sm:items-center ">
@@ -164,6 +203,7 @@ const EventDetails = () => {
                     </div>
                     <div className="">{` ${state?.location}`}</div>
                   </div>
+
                   <div className="text-gray-500 font-medium text-base mt-6">
                     {state?.description}
                   </div>
@@ -180,7 +220,7 @@ const EventDetails = () => {
                     </div>
                     <div className="flex flex-col space-y-4">
                       <div>
-                        <h2 className="text-2xl w-96 font-semibold">{state?.owner}</h2>
+                        <h2 className="text-2xl w-96 font-semibold">{state?.organizer}</h2>
                       </div>
                     </div>
                   </div>
@@ -248,12 +288,13 @@ const EventDetails = () => {
                 />
               </div>
               <button
-                type="button"
-                className="bg-sky-500 text-white p-2 rounded-md hover:bg-sky-400"
-                onClick={handleCloseForm}
-              >
-                Pay with Crypto
-              </button>
+  type="button"
+  className={`bg-sky-500 text-white p-2 rounded-md hover:bg-sky-400 ${status === "Connect Wallet" ? 'cursor-not-allowed opacity-50' : ''}`}
+  onClick={handleCloseForm}
+  disabled={status === "Connect Wallet"}
+>
+  {status === "Connect Wallet" ? "Connect Wallet First" : "Pay with Crypto"}
+</button>
             </form>
             <div className="flex flex-col pt-4">
               <p>Your QR (NFT) 👇</p>
@@ -266,6 +307,14 @@ const EventDetails = () => {
                   {/* Display the QR Code */}
                  <a href="${jsonUrl"> <p>JSON URL: {jsonUrl}</p> </a>{/* Display the JSON URL */}
                   {/* <QRCode value={generatedUrl} /> */}
+                  <button
+  type="button"
+  className="bg-sky-500 text-white p-2 rounded-md hover:bg-sky-400 ml-2"
+  onClick={() => downloadQRCodeImage(generatedUrl)}
+  disabled={!generatedUrl}
+>
+  Download QR Code Image
+</button>
                 </>
               )}
             

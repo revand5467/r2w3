@@ -159,9 +159,9 @@ const EventCreationForm = () => {
 
  
       return (
-        <div className='m-8 flex justify-center items-center'>
+        <div className='m-8 flex justify-center items-center  flex-col'>
              {isWalletInstalled ? (
-          <button onClick={connectWallet}>Connect Wallet</button>
+          <button onClick={connectWallet}>{account?account:"Connect Wallet"}</button>
         ) : (
           <p>Install Metamask wallet</p>
         )}

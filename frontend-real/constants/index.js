@@ -1,6 +1,6 @@
 export const eventsData = [
     {
-      id: 'event-1',
+      id: '10',
       eventName: 'Magical Night Gala',
       description: 'A magical night filled with enchanting experiences and surprises.',
       location: 'Wizardry Hall, Hogwarts',
