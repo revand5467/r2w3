@@ -187,7 +187,7 @@ const ticketId = await NFTContract.mintNFT(2, address, data.metadataIpfsUrl2);
       document.removeEventListener('mousedown', handleOutsideClick);
     };
   }, []);
-//
+////
   return (
     <>
       <div>
